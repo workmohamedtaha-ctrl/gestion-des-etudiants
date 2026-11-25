@@ -1,0 +1,165 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'workmohamedtaha@gmail.com';
+    }
+
+    function isValidProgram(program) {
+      return program in [
+        'Informatique & Systèmes',
+        'Data & Intelligence Artificielle',
+        'Cybersécurité',
+        'Génie Civil',
+        'Gestion & Finance',
+        'Design Numérique'
+      ];
+    }
+
+    function isValidLevel(level) {
+      return level in ['BTS 1', 'BTS 2', 'L1', 'L2', 'L3', 'M1', 'M2'];
+    }
+
+    function isValidStatus(status) {
+      return status in ['Actif', 'En stage', 'Diplômé', 'Suspendu'];
+    }
+
+    function isValidStudentFields(data) {
+      return data.keys().hasAll([
+        'matricule',
+        'firstName',
+        'lastName',
+        'email',
+        'phone',
+        'program',
+        'level',
+        'status',
+        'gpa',
+        'birthDate',
+        'enrollmentYear',
+        'address',
+        'notes',
+        'ownerId',
+        'createdAt',
+        'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'matricule',
+        'firstName',
+        'lastName',
+        'email',
+        'phone',
+        'program',
+        'level',
+        'status',
+        'gpa',
+        'birthDate',
+        'enrollmentYear',
+        'address',
+        'notes',
+        'ownerId',
+        'createdAt',
+        'updatedAt'
+      ])
+      && data.matricule is string
+      && data.matricule.size() >= 3 && data.matricule.size() <= 32
+      && data.matricule.matches('^[A-Z0-9\\-]+$')
+      && data.firstName is string
+      && data.firstName.size() >= 1 && data.firstName.size() <= 80
+      && data.lastName is string
+      && data.lastName.size() >= 1 && data.lastName.size() <= 80
+      && data.email is string
+      && data.email.size() >= 5 && data.email.size() <= 160
+      && data.phone is string
+      && data.phone.size() >= 6 && data.phone.size() <= 30
+      && data.program is string && isValidProgram(data.program)
+      && data.level is string && isValidLevel(data.level)
+      && data.status is string && isValidStatus(data.status)
+      && (data.gpa is int || data.gpa is float)
+      && data.gpa >= 0 && data.gpa <= 20
+      && data.birthDate is string
+      && data.birthDate.size() == 10
+      && data.birthDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+      && data.enrollmentYear is int
+      && data.enrollmentYear >= 2000 && data.enrollmentYear <= 2035
+      && data.address is string
+      && data.address.size() <= 240
+      && data.notes is string
+      && data.notes.size() <= 1000
+      && data.ownerId is string
+      && isValidId(data.ownerId)
+      && data.createdAt is timestamp
+      && data.updatedAt is timestamp;
+    }
+
+    match /students/{studentId} {
+      allow get: if isVerifiedUser()
+        && isValidId(studentId)
+        && (existing().ownerId == request.auth.uid || isAdmin());
+
+      allow list: if isVerifiedUser()
+        && (resource.data.ownerId == request.auth.uid || isAdmin());
+
+      allow create: if isVerifiedUser()
+        && isValidId(studentId)
+        && isValidStudentFields(incoming())
+        && incoming().ownerId == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser()
+        && isValidId(studentId)
+        && isValidStudentFields(incoming())
+        && (existing().ownerId == request.auth.uid || isAdmin())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'matricule',
+            'firstName',
+            'lastName',
+            'email',
+            'phone',
+            'program',
+            'level',
+            'status',
+            'gpa',
+            'birthDate',
+            'enrollmentYear',
+            'address',
+            'notes',
+            'updatedAt'
+          ])
+        );
+
+      allow delete: if isVerifiedUser()
+        && isValidId(studentId)
+        && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+  }
+}

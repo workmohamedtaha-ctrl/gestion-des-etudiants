@@ -1,0 +1,133 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Dossier académique et administratif d'un étudiant de l'établissement.",
+      "type": "object",
+      "properties": {
+        "matricule": {
+          "type": "string",
+          "description": "Numéro matricule unique de l'étudiant (ex: ETU-2026-001).",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[A-Z0-9\\-]+$"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "Prénom de l'étudiant.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Nom de famille de l'étudiant.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Adresse email académique ou personnelle de l'étudiant.",
+          "minLength": 5,
+          "maxLength": 160
+        },
+        "phone": {
+          "type": "string",
+          "description": "Numéro de téléphone de contact.",
+          "minLength": 6,
+          "maxLength": 30
+        },
+        "program": {
+          "type": "string",
+          "description": "Filière de formation suivie.",
+          "enum": [
+            "Informatique & Systèmes",
+            "Data & Intelligence Artificielle",
+            "Cybersécurité",
+            "Génie Civil",
+            "Gestion & Finance",
+            "Design Numérique"
+          ]
+        },
+        "level": {
+          "type": "string",
+          "description": "Niveau d'études actuel.",
+          "enum": ["BTS 1", "BTS 2", "L1", "L2", "L3", "M1", "M2"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Statut administratif de l'étudiant.",
+          "enum": ["Actif", "En stage", "Diplômé", "Suspendu"]
+        },
+        "gpa": {
+          "type": "number",
+          "description": "Moyenne générale sur 20."
+        },
+        "birthDate": {
+          "type": "string",
+          "description": "Date de naissance au format AAAA-MM-JJ.",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "enrollmentYear": {
+          "type": "integer",
+          "description": "Année d'inscription dans l'établissement."
+        },
+        "address": {
+          "type": "string",
+          "description": "Adresse postale de résidence.",
+          "minLength": 0,
+          "maxLength": 240
+        },
+        "notes": {
+          "type": "string",
+          "description": "Observations pédagogiques ou administratives.",
+          "minLength": 0,
+          "maxLength": 1000
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Identifiant Firebase UID du gestionnaire propriétaire du dossier.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Horodatage serveur de création du dossier."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Horodatage serveur de dernière mise à jour."
+        }
+      },
+      "required": [
+        "matricule",
+        "firstName",
+        "lastName",
+        "email",
+        "phone",
+        "program",
+        "level",
+        "status",
+        "gpa",
+        "birthDate",
+        "enrollmentYear",
+        "address",
+        "notes",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Collection principale des dossiers étudiants gérés par les utilisateurs authentifiés."
+    }
+  }
+}

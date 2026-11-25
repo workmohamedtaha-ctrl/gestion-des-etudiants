@@ -1,0 +1,6 @@
+{
+  "name": "Campusia — Gestion des étudiants",
+  "description": "Application de gestion des étudiants d'un établissement de formation : tableau de bord, annuaire, fiches détaillées et suivi académique.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
